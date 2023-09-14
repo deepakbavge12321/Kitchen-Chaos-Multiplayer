@@ -1,21 +1,47 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody), typeof(BoxCollider))]
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5.0f;
+    [SerializeField] private Rigidbody _rigidbody;
+    [SerializeField] private FixedJoystick _joystick;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private float _moveSpeed;
     public float rotationSpeed = 180.0f;
 
-    void Update()
+    private void FixedUpdate()
     {
-        // Movement
-        float moveZ = Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
-        float moveX = Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
+        if (IsMobilePlatform())
+        {
+            // Mobile Joystick Controls
+            _rigidbody.velocity = new Vector3(_joystick.Horizontal * _moveSpeed, _rigidbody.velocity.y, _joystick.Vertical * _moveSpeed);
 
-        transform.Translate(0, 0, moveZ);
-        transform.Translate(moveX, 0, 0);
+            if (_joystick.Horizontal != 0 || _joystick.Vertical != 0)
+            {
+                Vector3 moveDir = new Vector3(_joystick.Horizontal, 0, _joystick.Vertical);
+                transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotationSpeed);
+                _animator.SetBool("isWalking", true);
+            }
+            else
+            {
+                _animator.SetBool("isWalking", false);
+            }
+        }
+        else
+        {
+            // PC Keypad Controls
+            float moveZ = Input.GetAxis("Vertical") * _moveSpeed * Time.deltaTime;
+            float moveX = Input.GetAxis("Horizontal") * _moveSpeed * Time.deltaTime;
 
-        Vector3 moveDir = new Vector3(moveX, 0, moveZ);
+            transform.Translate(moveX, 0, moveZ);
 
-        transform.forward = Vector3.Slerp(transform.forward, moveDir,Time.deltaTime*rotationSpeed);
+            Vector3 moveDir = new Vector3(moveX, 0, moveZ);
+            transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotationSpeed);
+        }
+    }
+
+    private bool IsMobilePlatform()
+    {
+        return Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer;
     }
 }
