@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour, IKitchenObjectParent {
+public class Player : MonoBehaviour, /**IKitchenObjectParent**/ {
 
 
     public static Player Instance { get; private set; }
@@ -13,10 +13,10 @@ public class Player : MonoBehaviour, IKitchenObjectParent {
     public event EventHandler OnPickedSomething;
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
     public class OnSelectedCounterChangedEventArgs : EventArgs {
-        public BaseCounter selectedCounter;
+       // public BaseCounter selectedCounter;
     }
 
-
+        
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private GameInput gameInput;
     [SerializeField] private LayerMask countersLayerMask;
@@ -25,8 +25,8 @@ public class Player : MonoBehaviour, IKitchenObjectParent {
 
     private bool isWalking;
     private Vector3 lastInteractDir;
-    private BaseCounter selectedCounter;
-    private KitchenObject kitchenObject;
+   // private BaseCounter selectedCounter;
+   // private KitchenObject kitchenObject;
 
 
     private void Awake() {
@@ -35,7 +35,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent {
         }
         Instance = this;
     }
-
+    /**
     private void Start() {
         gameInput.OnInteractAction += GameInput_OnInteractAction;
         gameInput.OnInteractAlternateAction += GameInput_OnInteractAlternateAction;
@@ -56,6 +56,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent {
             selectedCounter.Interact(this);
         }
     }
+    **/
 
     private void Update() {
         HandleMovement();
