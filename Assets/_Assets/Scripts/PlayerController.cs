@@ -6,37 +6,55 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Rigidbody _rigidbody;
     [SerializeField] private FixedJoystick _joystick;
     [SerializeField] private Animator _animator;
-    [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _mobileMoveSpeed;
+    [SerializeField] private float _pcMoveSpeed = 10f; // Change PC move speed here
     public float rotationSpeed = 180.0f;
 
     private void FixedUpdate()
     {
+        float moveSpeed = IsMobilePlatform() ? _mobileMoveSpeed : _pcMoveSpeed;
+
         if (IsMobilePlatform())
         {
             // Mobile Joystick Controls
-            _rigidbody.velocity = new Vector3(_joystick.Horizontal * _moveSpeed, _rigidbody.velocity.y, _joystick.Vertical * _moveSpeed);
+            float horizontalInput = _joystick.Horizontal;
+            float verticalInput = _joystick.Vertical;
 
-            if (_joystick.Horizontal != 0 || _joystick.Vertical != 0)
+            Vector3 moveDir = new Vector3(horizontalInput, 0, verticalInput).normalized;
+
+            if (moveDir != Vector3.zero)
             {
-                Vector3 moveDir = new Vector3(_joystick.Horizontal, 0, _joystick.Vertical);
-                transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotationSpeed);
-                _animator.SetBool("isWalking", true);
+                // Calculate the target rotation based on the input vector
+                Quaternion targetRotation = Quaternion.LookRotation(moveDir);
+
+                // Smoothly rotate the player towards the target rotation
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
             }
-            else
-            {
-                _animator.SetBool("isWalking", false);
-            }
+
+            _rigidbody.velocity = moveDir * moveSpeed;
+
+            _animator.SetBool("isWalking", moveDir != Vector3.zero);
         }
         else
         {
             // PC Keypad Controls
-            float moveZ = Input.GetAxis("Vertical") * _moveSpeed * Time.deltaTime;
-            float moveX = Input.GetAxis("Horizontal") * _moveSpeed * Time.deltaTime;
+            float moveZ = Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
+            float moveX = Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
 
-            transform.Translate(moveX, 0, moveZ);
+            Vector3 moveDir = new Vector3(moveX, 0, moveZ).normalized;
 
-            Vector3 moveDir = new Vector3(moveX, 0, moveZ);
-            transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotationSpeed);
+            if (moveDir != Vector3.zero)
+            {
+                // Calculate the target rotation based on the input vector
+                Quaternion targetRotation = Quaternion.LookRotation(moveDir);
+
+                // Smoothly rotate the player towards the target rotation
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            }
+
+            _rigidbody.velocity = moveDir * moveSpeed;
+
+            _animator.SetBool("isWalking", moveDir != Vector3.zero);
         }
     }
 
